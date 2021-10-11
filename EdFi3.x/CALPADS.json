@@ -1,11 +1,17 @@
 {
-  "Name": "CALPADS Student information",
+  "Name": "CALPADS",
   "Description": "Level 2 validation for CALPADS student information",
   "EnvironmentType": "Ed-Fi v3.X with CALPADS descriptors",
   "Containers": [
     {
       "Name": "formatting",
       "Description": "Formatting validations",
+      "Rules": [],
+      "Tags": []
+    },
+    {
+      "Name": "STUDENT INFORMATION",
+      "Description": "Rules for the Student Information Submission",
       "Rules": [
         {
           "Name": "Student ID length",
@@ -66,14 +72,7 @@
           "ExternalRuleId": "FRMT0001-2.14",
           "MaxNumberResults": null,
           "Tags": []
-        }
-      ],
-      "Tags": []
-    },
-    {
-      "Name": "General",
-      "Description": "\"GER\" rules",
-      "Rules": [
+        },
         {
           "Name": "School Year missing from enrollment",
           "Description": "School Year is mandatory",
@@ -109,14 +108,7 @@
           "ExternalRuleId": "GERR0001-2.22",
           "MaxNumberResults": null,
           "Tags": []
-        }
-      ],
-      "Tags": []
-    },
-    {
-      "Name": "IVR rules",
-      "Description": "IVR rules",
-      "Rules": [
+        },
         {
           "Name": "Student age out of bounds",
           "Description": "Student age is over 22 for non-adult education, or adult education and less than 16 or more than 80",
@@ -178,6 +170,12 @@
           "Tags": []
         }
       ],
+      "Tags": []
+    },
+    {
+      "Name": "IVR rules",
+      "Description": "IVR rules",
+      "Rules": [],
       "Tags": []
     }
   ],
