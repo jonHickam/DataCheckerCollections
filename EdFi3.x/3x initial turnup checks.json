@@ -210,18 +210,6 @@
           "ExternalRuleId": null,
           "MaxNumberResults": null,
           "Tags": []
-        },
-        {
-          "Name": "LEAs missing bell schedules - Copy",
-          "Description": "Find all LEAs that do not have schools associated with Bell Schedules",
-          "ErrorMessage": null,
-          "SeverityLevel": 1,
-          "Resolution": null,
-          "Sql": "\n--leas no bell schedules\nSELECT LocalEducationAgency.LocalEducationAgencyId EducationOrganizationid,\n'edfi.LocalEducationAgency' Discriminator,\nEducationOrganization.NameOfInstitution\nFROM edfi.educationorganization\nJOIN edfi.LocalEducationAgency \n\ton LocalEducationAgency.LocalEducationAgencyId = educationorganization.EducationOrganizationId\nLEFT JOIN\n\t(SELECT school.LocalEducationAgencyId\n\tFROM edfi.school\n\tJOIN edfi.BellSchedule\n\ton BellSchedule.schoolId = school.SchoolId) tab\n\ton tab.LocalEducationAgencyId = LocalEducationAgency.LocalEducationAgencyId\nWHERE  LocalEducationAgency.LocalEducationAgencyId not in (255901)\nAND   tab.LocalEducationAgencyId is null;\n",
-          "Version": "1",
-          "ExternalRuleId": null,
-          "MaxNumberResults": null,
-          "Tags": []
         }
       ],
       "Tags": []
