@@ -4,9 +4,118 @@
   "EnvironmentType": "Ed-Fi v3.X with CALPADS descriptors",
   "Containers": [
     {
-      "Name": "formatting",
-      "Description": "Formatting validations",
-      "Rules": [],
+      "Name": "SSID Enrollment",
+      "Description": "calpads SSID Enrollment submission",
+      "Rules": [
+        {
+          "Name": "Missing birth Country",
+          "Description": "Birth Country required If Enrollment Status = 10 (Primary), 20 (Secondary), or 30 (Short-term) ",
+          "ErrorMessage": null,
+          "SeverityLevel": 2,
+          "Resolution": null,
+          "Sql": "select Student.StudentUniqueId,\n\t  StudentSchoolAssociation.SchoolId AS EducationOrganization,\n\t  EnrollmentStatus.CodeValue EnrollmentStatus\nFrom edfi.Student\nJOIN edfi.StudentSchoolAssociation\n\tON Student.StudentUSI = StudentSchoolAssociation.StudentUSI\nJOIN edfi.Descriptor EnrollmentStatus\n\tON EnrollmentStatus.DescriptorId = StudentSchoolAssociation.EntryGradeLevelReasonDescriptorId\nwhere Student.BirthCountryDescriptorId IS NULL\nAND EnrollmentStatus.CodeValue in ('10','20','30')\n\n",
+          "Version": "1",
+          "ExternalRuleId": "GERR0001-1.21",
+          "MaxNumberResults": null,
+          "Tags": []
+        },
+        {
+          "Name": "Birthdate after enrollment date",
+          "Description": "The birthdate must be before the enrollment date",
+          "ErrorMessage": null,
+          "SeverityLevel": 2,
+          "Resolution": null,
+          "Sql": "select Student.StudentUniqueId,\n\t  StudentSchoolAssociation.SchoolId AS EducationOrganization,\n\t  StudentSchoolAssociation.EntryDate,\n\t  Student.BirthDate\nFrom edfi.Student\nJOIN edfi.StudentSchoolAssociation\n\tON Student.StudentUSI = StudentSchoolAssociation.StudentUSI\nJOIN edfi.Descriptor EnrollmentStatus\n\tON EnrollmentStatus.DescriptorId = StudentSchoolAssociation.EntryGradeLevelReasonDescriptorId\nwhere Student.BirthDate >=  StudentSchoolAssociation.EntryDate;",
+          "Version": "1",
+          "ExternalRuleId": "SENR0013",
+          "MaxNumberResults": null,
+          "Tags": []
+        },
+        {
+          "Name": "Enrollment date too far out",
+          "Description": "Enrollment must not be more then 6 months out",
+          "ErrorMessage": null,
+          "SeverityLevel": 2,
+          "Resolution": null,
+          "Sql": "select\n  Student.StudentUniqueId,\n  StudentSchoolAssociation.SchoolId AS EducationOrganization,\n  StudentSchoolAssociation.EntryDate,\n  Student.BirthDate\nFrom\n  edfi.Student\n  JOIN edfi.StudentSchoolAssociation ON Student.StudentUSI = StudentSchoolAssociation.StudentUSI\n  JOIN edfi.Descriptor EnrollmentStatus ON EnrollmentStatus.DescriptorId = StudentSchoolAssociation.EntryGradeLevelReasonDescriptorId\nwhere\n  dateadd(month, 6, getdate()) < StudentSchoolAssociation.EntryDate",
+          "Version": "1",
+          "ExternalRuleId": "SENR0014",
+          "MaxNumberResults": null,
+          "Tags": []
+        },
+        {
+          "Name": "Missing withdraw date",
+          "Description": "Withdraw date is needed if withdraw code is present",
+          "ErrorMessage": null,
+          "SeverityLevel": 2,
+          "Resolution": null,
+          "Sql": "select Student.StudentUniqueId,\n\t  StudentSchoolAssociation.SchoolId AS EducationOrganization,\n\t  StudentSchoolAssociation.ExitWithdrawDate,\n\t  WithdrawCode.CodeValue WithdrawCode\nFrom edfi.Student\nJOIN edfi.StudentSchoolAssociation\n\tON Student.StudentUSI = StudentSchoolAssociation.StudentUSI\nJOIN edfi.Descriptor WithdrawCode\n\tON WithdrawCode.DescriptorId = StudentSchoolAssociation.ExitWithdrawTypeDescriptorId\nwhere StudentSchoolAssociation.ExitWithdrawTypeDescriptorId IS NOT NULL\nand\t  StudentSchoolAssociation.ExitWithdrawDate IS NULL\n",
+          "Version": "1",
+          "ExternalRuleId": "SENR0015",
+          "MaxNumberResults": null,
+          "Tags": []
+        },
+        {
+          "Name": "exit date before entry date",
+          "Description": "Enrollment Exit Date must be greater than or equal to Enrollment Start Date unless the Student Exit Reason Code = N470 (NoShowOther), in which case the date must be on or one day prior to the Start Date",
+          "ErrorMessage": null,
+          "SeverityLevel": 2,
+          "Resolution": null,
+          "Sql": "\nselect Student.StudentUniqueId,\n\t  ssa.SchoolId AS EducationOrganization,\n\t  ssa.ExitWithdrawDate,\n\t  ssa.EntryDate ,\n\t  WithdrawCode.CodeValue WithdrawCode\nFrom edfi.Student\nJOIN edfi.StudentSchoolAssociation ssa\n\tON Student.StudentUSI = ssa.StudentUSI\nJOIN edfi.Descriptor WithdrawCode\n\tON WithdrawCode.DescriptorId = ssa.ExitWithdrawTypeDescriptorId\nwhere ssa.ExitWithdrawDate < ssa.EntryDate\nAND NOT\n\t(WithdrawCode.CodeValue = 'N470'\n\tand (ssa.ExitWithdrawDate = ssa.EntryDate\n\t\tOR  dateadd(day,1,ssa.ExitWithdrawDate)= ssa.EntryDate\n\t\t)\n    );",
+          "Version": "1",
+          "ExternalRuleId": "SENR0018",
+          "MaxNumberResults": null,
+          "Tags": []
+        },
+        {
+          "Name": "Exit date too far out",
+          "Description": "Withdraw date must not be more than 30 days",
+          "ErrorMessage": null,
+          "SeverityLevel": 2,
+          "Resolution": null,
+          "Sql": "select\n  Student.StudentUniqueId,\n  StudentSchoolAssociation.SchoolId AS EducationOrganization,\n  StudentSchoolAssociation.ExitWithdrawDate\nFrom\n  edfi.Student\n  JOIN edfi.StudentSchoolAssociation ON Student.StudentUSI = StudentSchoolAssociation.StudentUSI\n  JOIN edfi.Descriptor EnrollmentStatus ON EnrollmentStatus.DescriptorId = StudentSchoolAssociation.EntryGradeLevelReasonDescriptorId\nwhere\n  dateadd(day, 30, getdate()) < StudentSchoolAssociation.ExitWithdrawDate\n",
+          "Version": "1",
+          "ExternalRuleId": "SENR0019",
+          "MaxNumberResults": null,
+          "Tags": []
+        },
+        {
+          "Name": "Missing withdraw code",
+          "Description": "Withdraw code is needed if withdraw date is present",
+          "ErrorMessage": null,
+          "SeverityLevel": 2,
+          "Resolution": null,
+          "Sql": "select\n  Student.StudentUniqueId,\n  StudentSchoolAssociation.SchoolId AS EducationOrganization,\n  StudentSchoolAssociation.ExitWithdrawDate,\n  WithdrawCode.CodeValue WithdrawCode\nFrom\n  edfi.Student\n  JOIN edfi.StudentSchoolAssociation ON Student.StudentUSI = StudentSchoolAssociation.StudentUSI\n  JOIN edfi.Descriptor WithdrawCode ON WithdrawCode.DescriptorId = StudentSchoolAssociation.ExitWithdrawTypeDescriptorId\nwhere\n  StudentSchoolAssociation.ExitWithdrawTypeDescriptorId IS NULL\n  and StudentSchoolAssociation.ExitWithdrawDate IS NOT NULL",
+          "Version": "1",
+          "ExternalRuleId": "SENR0020",
+          "MaxNumberResults": null,
+          "Tags": []
+        },
+        {
+          "Name": "E150 Start date to late",
+          "Description": "If Exit Code equals E150, then Enrollment Start Date (at same school) cannot be greater than 1 day after Enrollment Exit Date",
+          "ErrorMessage": null,
+          "SeverityLevel": 2,
+          "Resolution": null,
+          "Sql": "select Student.StudentUniqueId,\n\t  ssa.SchoolId AS EducationOrganization,\n\t  ssa.ExitWithdrawDate,\n\t  ssa.EntryDate ,\n\t  WithdrawCode.CodeValue WithdrawCode\nFrom edfi.Student\nJOIN edfi.StudentSchoolAssociation ssa\n\tON Student.StudentUSI = ssa.StudentUSI\nJOIN edfi.Descriptor WithdrawCode\n\tON WithdrawCode.DescriptorId = ssa.ExitWithdrawTypeDescriptorId\nwhere WithdrawCode.CodeValue = 'E150'\nAND ssa.ExitWithdrawDate < ssa.EntryDate\nAND  dateadd(day,1,ssa.ExitWithdrawDate) > ssa.EntryDate\n",
+          "Version": "1",
+          "ExternalRuleId": "SENR0286",
+          "MaxNumberResults": null,
+          "Tags": []
+        },
+        {
+          "Name": "E155 Exit valid only  between May 15 - Aug. 15",
+          "Description": "If Exit Code equals E155, \nthen Enrollment Exit Date must be between May 15 and August 15",
+          "ErrorMessage": null,
+          "SeverityLevel": 2,
+          "Resolution": null,
+          "Sql": "select Student.StudentUniqueId,\n\t  ssa.SchoolId AS EducationOrganization,\n\t  ssa.ExitWithdrawDate,\n\t  ssa.EntryDate ,\n\t  WithdrawCode.CodeValue WithdrawCode\nFrom edfi.Student\nJOIN edfi.StudentSchoolAssociation ssa\n\tON Student.StudentUSI = ssa.StudentUSI\nJOIN edfi.Descriptor WithdrawCode\n\tON WithdrawCode.DescriptorId = ssa.ExitWithdrawTypeDescriptorId\nwhere WithdrawCode.CodeValue = 'E155'\nAND (\n\tFORMAT (ssa.ExitWithdrawDate , 'MM-dd') < '05-15'\n\tOR\n\tFORMAT (ssa.ExitWithdrawDate , 'MM-dd') > '08-15')\n",
+          "Version": "1",
+          "ExternalRuleId": "SENR0287",
+          "MaxNumberResults": null,
+          "Tags": []
+        }
+      ],
       "Tags": []
     },
     {
@@ -170,12 +279,6 @@
           "Tags": []
         }
       ],
-      "Tags": []
-    },
-    {
-      "Name": "IVR rules",
-      "Description": "IVR rules",
-      "Rules": [],
       "Tags": []
     }
   ],
