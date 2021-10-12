@@ -295,6 +295,6 @@
     }
   ],
   "Tags": [],
-  "DestinationTable": "EdFiRuleExecutionLogDetails2",
-  "DestinationStructure": "[{\"Name\":\"id\",\"Type\":\"int\",\"IsNullable\":false},{\"Name\":\"educationorganizationid\",\"Type\":\"int\",\"IsNullable\":true},{\"Name\":\"studentuniqueid\",\"Type\":\"nvarchar\",\"IsNullable\":true},{\"Name\":\"finecode\",\"Type\":\"nvarchar\",\"IsNullable\":true},{\"Name\":\"coursecode\",\"Type\":\"nvarchar\",\"IsNullable\":true},{\"Name\":\"discriminator\",\"Type\":\"nvarchar\",\"IsNullable\":true},{\"Name\":\"programname\",\"Type\":\"nvarchar\",\"IsNullable\":true},{\"Name\":\"staffuniqueid\",\"Type\":\"nvarchar\",\"IsNullable\":true},{\"Name\":\"otherdetails\",\"Type\":\"nvarchar\",\"IsNullable\":true},{\"Name\":\"ruleexecutionlogid\",\"Type\":\"int\",\"IsNullable\":false}]"
+  "DestinationTable": "EdFiRuleExecutionLogDetails",
+  "DestinationStructure": "[{\"Name\":\"id\",\"Type\":\"int\",\"IsNullable\":false},{\"Name\":\"educationorganizationid\",\"Type\":\"int\",\"IsNullable\":true},{\"Name\":\"studentuniqueid\",\"Type\":\"nvarchar\",\"IsNullable\":true},{\"Name\":\"coursecode\",\"Type\":\"nvarchar\",\"IsNullable\":true},{\"Name\":\"discriminator\",\"Type\":\"nvarchar\",\"IsNullable\":true},{\"Name\":\"programname\",\"Type\":\"nvarchar\",\"IsNullable\":true},{\"Name\":\"staffuniqueid\",\"Type\":\"nvarchar\",\"IsNullable\":true},{\"Name\":\"otherdetails\",\"Type\":\"nvarchar\",\"IsNullable\":true},{\"Name\":\"ruleexecutionlogid\",\"Type\":\"int\",\"IsNullable\":false}]"
 }
