@@ -114,6 +114,18 @@
           "ExternalRuleId": "SENR0287",
           "MaxNumberResults": null,
           "Tags": []
+        },
+        {
+          "Name": "Enrollment Status cannot equal 50 for AD Grade Level",
+          "Description": "When Grade Level is AD, Enrollment Status cannot equal 50. ",
+          "ErrorMessage": null,
+          "SeverityLevel": 2,
+          "Resolution": null,
+          "Sql": "select\n  Student.StudentUniqueId,\n  StudentSchoolAssociation.SchoolId AS EducationOrganization,\n  StudentSchoolAssociation.ExitWithdrawDate\nFrom\n  edfi.Student\n  JOIN edfi.StudentSchoolAssociation \n\tON Student.StudentUSI = StudentSchoolAssociation.StudentUSI\n  JOIN edfi.Descriptor GradeLevel \n\tON GradeLevel.DescriptorId = StudentSchoolAssociation.EntryGradeLevelDescriptorId\n  JOIN edfi.Descriptor entryCode\n\tON entryCode.DescriptorId = StudentSchoolAssociation.EntryTypeDescriptorId\nwhere\n  GradeLevel.CodeValue = 'AD'\n  and entryCode.CodeValue = '50'",
+          "Version": "1",
+          "ExternalRuleId": "Enrollment Status cannot equal 50 for AD Grade Level",
+          "MaxNumberResults": null,
+          "Tags": []
         }
       ],
       "Tags": []
