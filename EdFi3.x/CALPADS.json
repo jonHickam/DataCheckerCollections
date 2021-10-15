@@ -292,6 +292,135 @@
         }
       ],
       "Tags": []
+    },
+    {
+      "Name": "STUDENT PROGRAM",
+      "Description": "Student program submission",
+      "Rules": [
+        {
+          "Name": "Education Program Membership Start Date Less Than Birth Date",
+          "Description": "Education Program Membership Start Date must be greater than or equal to Student Birth Date",
+          "ErrorMessage": null,
+          "SeverityLevel": 2,
+          "Resolution": null,
+          "Sql": "SELECT StudentUniqueId,\n\tSPA.EducationOrganizationId,\n\t   BirthDate,\n\t   SPA.BeginDate\nFROM edfi.StudentProgramAssociation SPA\nJOIN edfi.Student\n\ton SPA.StudentUSI = Student.StudentUSI\nWHERE BeginDate < BirthDate ",
+          "Version": "1",
+          "ExternalRuleId": "SPRG0076",
+          "MaxNumberResults": null,
+          "Tags": []
+        },
+        {
+          "Name": "Education Program Membership Start Date Greater Than Current Date plus six months",
+          "Description": "If Education Program Membership Code equals 3 (Participating) Then Education Program Membership Start Date must be less than or equal to current date plus six months\n",
+          "ErrorMessage": null,
+          "SeverityLevel": 2,
+          "Resolution": null,
+          "Sql": "SELECT StudentUniqueId,\n\tSPA.EducationOrganizationId,\n\t   SPA.BeginDate\nFROM edfi.StudentProgramAssociation SPA\nJOIN edfi.Student\n\ton SPA.StudentUSI = Student.StudentUSI\nWHERE BeginDate > dateadd(month,6,getdate()) ",
+          "Version": "1",
+          "ExternalRuleId": "SPRG0078",
+          "MaxNumberResults": null,
+          "Tags": []
+        }
+      ],
+      "Tags": []
+    },
+    {
+      "Name": "Incident collection",
+      "Description": "Incident collection submission",
+      "Rules": [
+        {
+          "Name": "Incident Occurance Date Greater Than Current Date",
+          "Description": "Incident Occurrence Date must be less than or equal to current date",
+          "ErrorMessage": null,
+          "SeverityLevel": 1,
+          "Resolution": null,
+          "Sql": "SELECT S.StudentUniqueId,\n\t\tDI.SchoolId EducationOrganization,\n\t\tDI.IncidentIdentifier,\n\t   DI.IncidentDate\nFROM edfi.StudentDisciplineIncidentAssociation SDIA\nJOIN edfi.DisciplineIncident DI\n\tON DI.IncidentIdentifier = SDIA.IncidentIdentifier\n\tAND DI.SchoolId = SDIA.SchoolId\nJOIN edfi.Student S\n\tON SDIA.StudentUSI = S.StudentUSI\nWHERE DI.IncidentDate > getdate()\n\t",
+          "Version": "1",
+          "ExternalRuleId": "SINC0498",
+          "MaxNumberResults": null,
+          "Tags": []
+        },
+        {
+          "Name": "Student Not Enrolled on Incident Occurance Date",
+          "Description": "Student should be enrolled in your school on the Incident Occurrence Date specified",
+          "ErrorMessage": null,
+          "SeverityLevel": 2,
+          "Resolution": null,
+          "Sql": "SELECT S.StudentUniqueId,\n\t\tDI.SchoolId EducationOrganization,\n\t\tDI.IncidentIdentifier,\n\t   DI.IncidentDate\nFROM edfi.StudentDisciplineIncidentAssociation SDIA\nJOIN edfi.DisciplineIncident DI\n\tON DI.IncidentIdentifier = SDIA.IncidentIdentifier\n\tAND DI.SchoolId = SDIA.SchoolId\nJOIN edfi.Student S\n\tON SDIA.StudentUSI = S.StudentUSI\nLEFT JOIN edfi.StudentSchoolAssociation SSA\n\tON SDIA.StudentUSI = SSA.StudentUSI\n\tAND SDIA.SchoolId = SSA.SchoolId\n\tAND DI.IncidentDate >= SSA.EntryDate\n\tAND DI.IncidentDate <= SSA.ExitWithdrawDate\nWHERE SSA.StudentUSI IS NULL\n",
+          "Version": "1",
+          "ExternalRuleId": "SINC0495",
+          "MaxNumberResults": null,
+          "Tags": []
+        },
+        {
+          "Name": "Missing Incident Result Duration Days",
+          "Description": "If the Incident Result Code is equal to 100 (suspension) or 110 (In-school suspension) or 200 (Expulsion) Then Incident Result Duration Days must be populated.\n",
+          "ErrorMessage": null,
+          "SeverityLevel": 2,
+          "Resolution": null,
+          "Sql": "SELECT StudentUniqueId,\n\tDA.ResponsibilitySchoolId educationOrganizationId,\n\tDiscipline.codeValue DisciplineCode,\n\tDA.DisciplineActionLength\nFROM edfi.Student S\nJOIN edfi.DisciplineAction DA\n\tON S.StudentUSI = DA.StudentUSI\nJOIN edfi.DisciplineActionDiscipline DAD\n\tON DA.DisciplineActionIdentifier = DAD.DisciplineActionIdentifier\n\tAND DA.DisciplineDate = DAD.DisciplineDate\n\tAND DA.StudentUSI = DAD.StudentUSI\nJOIN edfi.descriptor Discipline\n\tON DAD.DisciplineDescriptorId = Discipline.DescriptorId\nWHERE DA.DisciplineActionLength IS NULL\nAND Discipline.CodeValue in ('110','200')",
+          "Version": "1",
+          "ExternalRuleId": "SIRS0489",
+          "MaxNumberResults": null,
+          "Tags": []
+        }
+      ],
+      "Tags": []
+    },
+    {
+      "Name": "Student Incident Response",
+      "Description": "Student Incident Response",
+      "Rules": [
+        {
+          "Name": "Invalid Student Instructional Support Indicator",
+          "Description": "If Incident Result Duration is greater than 10 days then Student Instructional Support Indicator in the associated SINC record should be populated  \n",
+          "ErrorMessage": null,
+          "SeverityLevel": 2,
+          "Resolution": null,
+          "Sql": "SELECT StudentUniqueId,\n\tDA.ResponsibilitySchoolId educationOrganizationId,\n\tDA.DisciplineActionLength,\n\tDA.ReceivedEducationServicesDuringExpulsion\nFROM edfi.Student S\nJOIN edfi.DisciplineAction DA\n\tON S.StudentUSI = DA.StudentUSI\nWHERE DisciplineActionLength > 10\nand ReceivedEducationServicesDuringExpulsion IS NULL",
+          "Version": "1",
+          "ExternalRuleId": "SIRS0504",
+          "MaxNumberResults": null,
+          "Tags": []
+        },
+        {
+          "Name": "Invalid No Action (400) Incident Result Code",
+          "Description": "Incident Result 400 (No Action) must not be combined with any other Incident Result for the same student, School of Attendance, Incident Local ID, and Academic Year ID\n",
+          "ErrorMessage": null,
+          "SeverityLevel": 1,
+          "Resolution": null,
+          "Sql": "SELECT\n\tDISTINCT\n\tStudentUniqueId,\n\tDA.ResponsibilitySchoolId educationOrganizationId,\n\tNoAction.codeValue NoActionDisciplineCode,\n\tNotNoAction.CodeValue NotNoActionDisciplineCode\nFROM edfi.Student S\nJOIN edfi.DisciplineAction DA\n\tON S.StudentUSI = DA.StudentUSI\nJOIN edfi.DisciplineActionDiscipline DAD\n\tON DA.DisciplineActionIdentifier = DAD.DisciplineActionIdentifier\n\tAND DA.DisciplineDate = DAD.DisciplineDate\n\tAND DA.StudentUSI = DAD.StudentUSI\nJOIN edfi.descriptor NoAction\n\tON DAD.DisciplineDescriptorId = NoAction.DescriptorId\n\tAND NoAction.CodeValue = '400'\nJOIN edfi.Descriptor NotNoAction\n\tON DAD.DisciplineDescriptorId = NotNoAction.DescriptorId\n\tAND NotNoAction.CodeValue != '400'\n",
+          "Version": "1",
+          "ExternalRuleId": "SIRS0505",
+          "MaxNumberResults": null,
+          "Tags": []
+        },
+        {
+          "Name": "Invalid Law Enforcement Referral Incident Result Code",
+          "Description": "A student must not have an Incident Result Code =700 (Law Enforcement Referral) AND Incident Result Code = 800 (School Related Arrest) for the same Incident\n",
+          "ErrorMessage": null,
+          "SeverityLevel": 1,
+          "Resolution": null,
+          "Sql": "SELECT\n\tDISTINCT\n\tStudentUniqueId,\n\tDA.ResponsibilitySchoolId educationOrganizationId,\n\tLawEnforcement.codeValue LawEnforcementDisciplineCode,\n\tSchoolArrest.CodeValue SchoolArrestDisciplineCode\nFROM edfi.Student S\nJOIN edfi.DisciplineAction DA\n\tON S.StudentUSI = DA.StudentUSI\nJOIN edfi.DisciplineActionDiscipline DAD\n\tON DA.DisciplineActionIdentifier = DAD.DisciplineActionIdentifier\n\tAND DA.DisciplineDate = DAD.DisciplineDate\n\tAND DA.StudentUSI = DAD.StudentUSI\nJOIN edfi.descriptor LawEnforcement\n\tON DAD.DisciplineDescriptorId = LawEnforcement.DescriptorId\n\tAND LawEnforcement.CodeValue = '700'\nJOIN edfi.Descriptor SchoolArrest\n\tON DAD.DisciplineDescriptorId = SchoolArrest.DescriptorId\n\tAND SchoolArrest.CodeValue = '800'\n",
+          "Version": "1",
+          "ExternalRuleId": "SIRS0506",
+          "MaxNumberResults": null,
+          "Tags": []
+        },
+        {
+          "Name": "Invalid Incident Result Duration Days",
+          "Description": "If Incident Result Code is equal to 100 (suspension) or 110 (in-school suspension) Then Incident Result Duration Days must be greater than zero.\n",
+          "ErrorMessage": null,
+          "SeverityLevel": 2,
+          "Resolution": null,
+          "Sql": "SELECT StudentUniqueId,\n\tDA.ResponsibilitySchoolId educationOrganizationId,\n\tDiscipline.codeValue DisciplineCode,\n\tDA.DisciplineActionLength\nFROM edfi.Student S\nJOIN edfi.DisciplineAction DA\n\tON S.StudentUSI = DA.StudentUSI\nJOIN edfi.DisciplineActionDiscipline DAD\n\tON DA.DisciplineActionIdentifier = DAD.DisciplineActionIdentifier\n\tAND DA.DisciplineDate = DAD.DisciplineDate\n\tAND DA.StudentUSI = DAD.StudentUSI\nJOIN edfi.descriptor Discipline\n\tON DAD.DisciplineDescriptorId = Discipline.DescriptorId\nWHERE DA.DisciplineActionLength < 0\nAND Discipline.CodeValue in ('110','200')",
+          "Version": "1",
+          "ExternalRuleId": "SIRS0507",
+          "MaxNumberResults": null,
+          "Tags": []
+        }
+      ],
+      "Tags": []
     }
   ],
   "Tags": [],
